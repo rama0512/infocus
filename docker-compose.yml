@@ -1,0 +1,26 @@
+services:
+  #frontend:
+    #image: ramachandran05/calmr-front-dev:latest 
+    #ports:
+      #- "5173:5173"
+    #networks:
+      #- proctor_net
+  backend:
+    image: ramachandran05/calmr-app:latest 
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    networks:
+      - proctor_net
+    environment:
+      - PYTHONUNBUFFERED-1
+  #ml_layer:
+  #  image: ramachandran05/calmr-ml:latest
+  #  env_file:
+  #    - .env
+  #  networks:
+  #    - proctor_net
+networks:
+  proctor_net:
+    driver: bridge

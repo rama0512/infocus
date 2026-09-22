@@ -1,0 +1,31 @@
+# ---------- Build stage ----------
+FROM node:20-alpine AS build
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Copy source
+COPY . .
+
+
+# Build production assets
+RUN npm run build -- --mode production
+
+
+# ---------- Runtime stage ----------
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install static server
+RUN npm install -g serve
+
+# Copy built files only
+COPY --from=build /app/dist ./dist
+
+EXPOSE 5173
+
+CMD ["serve", "-s", "dist", "-l", "5173"]

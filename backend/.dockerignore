@@ -1,0 +1,9 @@
+penv1/
+__pycache__/
+.pytest_cache/
+.git/
+.env*
+app/.env*
+.gitignore
+Dockerfile
+hidden_req.txt

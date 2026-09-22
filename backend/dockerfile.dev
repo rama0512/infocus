@@ -1,0 +1,33 @@
+FROM python:3.11-bookworm
+
+WORKDIR /code
+# Add this to your Dockerfile (usually after WORKDIR)
+#ENV APP_ENV="production"
+ENV APP_ENV="development"
+#USER root
+
+#RUN sed -i 's|deb.debian.org/debian|mirrors.kernel.org/debian|g' /etc/apt/sources.list.d/debian.sources || true
+RUN sed -i 's|deb.debian.org/debian|mirrors.kernel.org/debian|g' /etc/apt/sources.list && \
+    sed -i 's|security.debian.org/debian-security|mirrors.kernel.org/debian-security|g' /etc/apt/sources.list || true
+
+# 2. Install the real C++ execution runtimes MediaPipe actually requires
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgles2 \
+    libegl1 \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY ./requirements.dev.txt /code/requirements.dev.txt
+#RUN pip install --no-cache-dir opencv-python-headless==4.9.0.80
+
+RUN pip install --no-cache-dir  -r ./requirements.dev.txt
+#RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY . /code
+
+EXPOSE 8000
+
+ENV PYTHONPATH=/code/app
+
+CMD ["uvicorn","app.main:app", "--host", "0.0.0.0", "--port", "8000"]

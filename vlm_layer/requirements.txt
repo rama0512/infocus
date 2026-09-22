@@ -1,0 +1,7 @@
+websockets==16.0
+pydantic>=2.0
+vllm
+httpx
+sqlalchemy
+asyncpg
+python-dotenv

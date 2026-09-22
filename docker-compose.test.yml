@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Shankar05!
+      POSTGRES_DB: calmr_db
+    networks:
+      - proctor_net2
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    image: ramachandran05/calmr-front-dev-t:latest 
+    ports:
+      - "5173:5173"
+    networks:
+      - proctor_net2
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile.dev
+    image: ramachandran05/calmr-app-t:latest 
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.development
+    networks:
+      - proctor_net2
+    volumes:
+      - ./backend:/code
+      - ram_shared_volume:/var/run/app_ipc  # Unified access to the RAM pipeline for FastAPI + OpenCV Math
+    environment:
+      - PYTHONUNBUFFERED=1
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # CPU Pinning & Shared Memory Optimization
+    cpuset: "0-11"  # Dedicates 12 vCPUs to FastAPI + OpenCV Math
+    #ipc: host       # Access EC2 host's shared memory. "host" which gives full access to the host's IPC namespace, including all shared memory segments, semaphores, and message queues. "sharable" allows other containers to join and share the same IPC namespace without granting full access to the host's IPC resources.
+    ipc: shareable
+
+  vlm_layer:
+    build:
+      context: ./vlm_layer
+      dockerfile: dockerfile.dev
+    image: ramachandran05/calmr-vlm-layer-t:latest 
+    networks:
+      - proctor_net2
+    volumes:
+      - ram_shared_volume:/var/run/app_ipc  # Unified access to the RAM pipeline
+    environment:
+      - PYTHONUNBUFFERED=1
+    cpuset: "12-15"  # 4 cores for vllm orchestration
+    # Directly attaches vLLM to the backend's shared memory namespace
+    ipc: service:backend  
+    #ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+networks:
+  proctor_net2:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  # Creates a 2GB ultra-fast RAM-backed filesystem shared across both containers natively
+  ram_shared_volume:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: "size=2G,mode=777"

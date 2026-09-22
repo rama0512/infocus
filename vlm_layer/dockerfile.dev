@@ -1,0 +1,35 @@
+
+
+# Use official vLLM build pre-optimized for NVIDIA CUDA 12+ and PyTorch
+FROM vllm/vllm-openai:v0.29.0 
+
+WORKDIR /code
+
+ENV APP_ENV="development"
+
+# 1. Install critical system dependencies for multi-modal image/video handling
+USER root
+
+
+# 2. Handle Python dependency installation (Leverage Docker layer caching)
+COPY ./requirements.dev.txt /code/requirements.dev.txt
+
+# Strip out 'vllm' and 'asyncio' from requirements.txt to avoid overwriting 
+# the highly tuned, pre-installed versions inside the official base image.
+RUN pip install --no-cache-dir -r /code/requirements.dev.txt
+
+# 3. Copy application files 
+COPY . /code
+
+# Ensure Python looks into your app folder properly
+ENV PYTHONPATH=/code/app
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8001
+
+# Run your newly refactored Uvicorn FastAPI server module
+
+
+# Pass a valid Hugging Face vision model path as a positional argument
+ENTRYPOINT []
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]

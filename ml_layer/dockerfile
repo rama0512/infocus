@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /code
+# Add this to your Dockerfile (usually after WORKDIR)
+ENV APP_ENV="production"
+
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
+
+COPY . /code
+
+#EXPOSE 8000
+
+ENV PYTHONPATH=/code/app
+
+CMD ["python", "/code/app/worker.py"]

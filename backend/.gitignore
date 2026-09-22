@@ -1,0 +1,39 @@
+# Python-specific
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual Environment (Crucial)
+.venv/
+venv/
+penv1/
+ENV/
+env/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Database (if using local SQLite for development)
+*.sqlite3
+*.db
+
+# Migrations (Alembic)
+# Note: Keep the 'versions/' folder, but you can ignore temporary files
+alembic/render.pyc
+
+# IDEs
+.vscode/
+.idea/
+
+# Distribution / Packaging
+dist/
+build/
+*.egg-info/
+
+#others
+hidden_req.txt
